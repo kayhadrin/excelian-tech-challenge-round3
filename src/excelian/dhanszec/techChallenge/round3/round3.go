@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"math/rand"
 	"math/big"
 )
@@ -70,6 +71,13 @@ func findMissingElement(first []int64, second []int64) int {
 }
 
 func main() {
+	// t0 := time.Now()
+
+	// Create and seed the generator.
+	// Typically a non-fixed seed should be used, such as time.Now().UnixNano().
+	// Using a fixed seed will produce the same output on every run.
+	rand.Seed(time.Now().UnixNano())
+
 	// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
 
 	first := generateList(N)
@@ -80,4 +88,7 @@ func main() {
 
 	missingElementIndex := findMissingElement(first, second)
 	fmt.Printf("Missing element is %v\n", missingElementIndex)
+
+	// t1 := time.Now()
+	// fmt.Printf("The call took %v to run.\n", t1.Sub(t0))
 }
