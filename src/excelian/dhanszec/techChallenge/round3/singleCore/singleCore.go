@@ -15,10 +15,6 @@ const (
 	N = 10000
 )
 
-//var (
-//	// N int = 10000
-//)
-
 func generateList(count int) []int64 {
 	ret := make([]int64, count)
 	for i := 0; i < count; i++ {
