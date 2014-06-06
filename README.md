@@ -1,5 +1,23 @@
 # Excelian Tech Challenge Round 3
 
+# Build
+
+Assuming that you have a working Go development environment.
+
+	cd <this git repo root>
+	go install excelian/dhanszec/techChallenge/round3/multiCore
+	go install excelian/dhanszec/techChallenge/round3/singleCore
+	go install excelian/dhanszec/techChallenge/round3/singleCoreMin
+
+	# run multi-core (code is using multiple threads by default)
+	bin\multiCore.exe
+
+	# run single-core
+	bin\singleCore.exe
+
+	# run single-core (minified)
+	bin\singleCoreMin.exe
+
 ## Performance test notes
 
 Tested on:
