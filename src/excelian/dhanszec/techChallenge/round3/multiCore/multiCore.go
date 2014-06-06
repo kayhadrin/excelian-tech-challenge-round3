@@ -8,7 +8,7 @@ import (
 	"math"
 	"math/rand"
 	"math/big"
-//	"runtime"
+	"runtime"
 )
 
 const (
@@ -200,9 +200,14 @@ func main() {
 	// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
 
 	// Prepare multi-core
-	// CPU_NUM = runtime.NumCPU()
-	CPU_NUM = 100
+	CPU_NUM = runtime.NumCPU()
+	//////////////////////
+	//DEBUG
+	// Enable the line below to allow Go to run goroutines on multiple CPU cores.
+	// But it's not very effiecient unless N is really large (10M)
 	// runtime.GOMAXPROCS(CPU_NUM)
+	//////////////////////
+
 	// fmt.Printf("CPU_NUM = %v\n", CPU_NUM)
 
 	// prepare goroutines communication channel
