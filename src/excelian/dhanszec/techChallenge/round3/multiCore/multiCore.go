@@ -3,28 +3,89 @@ package main
 import (
 	"fmt"
 	"time"
+	"math"
 	"math/rand"
 	"math/big"
-	"runtime"
+//	"runtime"
 )
 
 const (
 	MAX_VALUE = 9223372036854775807 // maximum 64-bit signed integer
-	// N = 10
+	// MAX_VALUE = 100
+	// N = 100
+	// N = 10000000 // this is when multi-core starts to become noticeable
 	N = 10000
 )
 
-//var (
-//	// N int = 10000
-//)
+var (
+	CPU_NUM int
+	// messages chan []int64
+	messages chan *big.Int
+)
 
 func generateList(count int) []int64 {
 	ret := make([]int64, count)
 	for i := 0; i < count; i++ {
 		ret[i] = int64(rand.Int63()) // generate random positive 63-bit integer
+		//ret[i] = int64(rand.Int63n(MAX_VALUE)) // generate random positive 63-bit integer
 	}
 	return ret
 }
+
+/*
+func __generateList(count int) []int64 {
+	defaultSliceCount := int(math.Floor(float64(count / CPU_NUM)))
+	// finalSliceCount := int(float64(count) - defaultSliceCount * float64(CPU_NUM) + defaultSliceCount)
+	finalSliceCount := count - defaultSliceCount * CPU_NUM + defaultSliceCount
+	//defaultSliceCount_int := int(defaultSliceCount)
+
+	//DEBUG
+	// fmt.Printf("sliceCount = %v\n", defaultSliceCount)
+	// fmt.Printf("finalSliceCount = %v\n", finalSliceCount)
+
+	// generate a sub-array of random numbers
+	genRandNumbers := func (len int) {
+		numbers := make([]int64, len)
+		for j := 0; j < len; j++ {
+			numbers[j] = rand.Int63n(MAX_VALUE)
+		}
+		messages <- numbers
+	}
+
+	finalArray := make([]int64, count)
+	// finalArray := []int64{}
+
+	// send off goroutines
+	cpuNumMinus := CPU_NUM - 1
+	for i := 0; i < cpuNumMinus; i++ {
+		go genRandNumbers(defaultSliceCount)
+	}
+	go genRandNumbers(finalSliceCount)
+
+	// process received data
+	finalIndex := 0
+	for i := 0; i < CPU_NUM; i++ {
+		newNumbers := <- messages
+		// fmt.Printf("newNumbers = %v\n", newNumbers)
+		// finalArray[i] = newNumbers
+		// finalArray = append(finalArray, newNumbers...)
+
+		for _, val := range newNumbers {
+			finalArray[finalIndex] = val
+			finalIndex++
+		}
+	}
+	// fmt.Printf("done loop: finalArray = %v\n", finalArray)
+
+	return finalArray
+//
+//	ret := make([]int64, count)
+//	for i := 0; i < count; i++ {
+//		ret[i] = int64(rand.Int63()) // generate random positive 63-bit integer
+//	}
+//	return ret
+}
+*/
 
 func shuffleAndRemoveElement(array []int64) []int64 {
 	arrayLen := len(array)
@@ -40,39 +101,94 @@ func shuffleAndRemoveElement(array []int64) []int64 {
 }
 
 func findMissingElement(first []int64, second []int64) int {
-	sum := big.NewInt(0)
 	firstLength := len(first)
-	lastIndex := firstLength - 1
-	secondArrayMap := make(map[int64]int, firstLength)
+	secondLength := len(second)
+	firstArrayMap := make(map[int64]int, firstLength)
+	//////////////////////////////////////////////////////////////////////////
+	defaultSliceCount := int(math.Floor(float64(secondLength / CPU_NUM)))
 
-	for i, secondVal := range second {
-		firstVal := first[i]
-		diff := int64(firstVal - secondVal)
+	//DEBUG
+	// fmt.Printf("sliceCount = %v\n", defaultSliceCount)
 
-		// index the 'first array' value
-		secondArrayMap[firstVal] = i
+	sumArrays := func (_first, _second []int64, async bool) *big.Int {
+		_sum := big.NewInt(0)
+		_firstLen := len(_first)
+		_secondLen := len(_second)
 
-		sum = sum.Add(sum, big.NewInt(diff) )
-		//fmt.Printf("%v| diff = %v - %v = %v, sum = %v\n", i, firstVal, secondVal, diff, sum)
+		// fmt.Printf("_first = %v\n", _first)
+		// fmt.Printf("_second = %v\n", _second)
+
+		for i := 0; i < _secondLen; i++ {
+			_sum = _sum.Add(_sum, big.NewInt(int64(_first[i] - _second[i])))
+			//fmt.Printf("%v| diff = %v - %v = %v, sum = %v\n", i, firstVal, secondVal, diff, sum)
+		}
+		if _firstLen > _secondLen {
+			// fmt.Printf("last item: %v\n", _first[_firstLen - 1])
+			_sum = _sum.Add(_sum, big.NewInt(_first[_firstLen - 1]))
+		}
+
+		if async {
+//			fmt.Printf("<- _sum = %v\n", _sum)
+			messages <- _sum
+		} else {
+//			fmt.Printf("return _sum = %v\n", _sum)
+		}
+
+		return _sum
 	}
 
-	// add the last value from first array
-	lastVal := int64(first[lastIndex])
-	// index the last value of the 'first array'
-	secondArrayMap[lastVal] = lastIndex
+	// send off goroutines
+	cpuNumMinus := CPU_NUM - 1
+	offset := 0
+	for i := 0; i < cpuNumMinus; i++ {
+		go sumArrays(first[offset:offset + defaultSliceCount], second[offset:offset + defaultSliceCount], true)
+		offset += defaultSliceCount
+	}
+	sum := sumArrays(first[offset:], second[offset:], false)
 
-	// finalise sum calculation
-	sum = sum.Add(sum, big.NewInt(lastVal))
+	//fmt.Printf("sum = %v\n", sum)
+
+	// process received data
+	for i := 0; i < cpuNumMinus; i++ {
+		receivedSum := <- messages
+		//fmt.Printf("receivedSum = %v\n", receivedSum)
+		sum = sum.Add(sum, receivedSum)
+		//fmt.Printf("sum = %v\n", sum)
+	}
+	//////////////////////////////////////////////////////////////////////////
+
+	for i, firstVal := range first {
+		firstArrayMap[firstVal] = i
+	}
+
+//	for i, secondVal := range second {
+//		firstVal := first[i]
+//		//diff := int64(firstVal - secondVal)
+//
+//		// index the 'first array' value
+//		firstArrayMap[firstVal] = i
+//
+//		//sum = sum.Add(sum, big.NewInt(diff) )
+//		//fmt.Printf("%v| diff = %v - %v = %v, sum = %v\n", i, firstVal, secondVal, diff, sum)
+//	}
+//
+//	// add the last value from first array
+//	lastVal := int64(first[lastIndex])
+//	// index the last value of the 'first array'
+//	firstArrayMap[lastVal] = lastIndex
+//
+//	// finalise sum calculation
+//	sum = sum.Add(sum, big.NewInt(lastVal))
 	// fmt.Printf("add last value from first array = %v\n", lastVal)
 
 	// fmt.Printf("Final sum = %v\n", sum)
-	//fmt.Printf("secondArrayMap = %v\n", secondArrayMap)
+	//fmt.Printf("firstArrayMap = %v\n", firstArrayMap)
 
-	return secondArrayMap[sum.Int64()]
+	return firstArrayMap[sum.Int64()]
 }
 
 func main() {
-	// t0 := time.Now()
+	t0 := time.Now()
 
 	// Create and seed the generator.
 	// Typically a non-fixed seed should be used, such as time.Now().UnixNano().
@@ -82,19 +198,33 @@ func main() {
 	// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
 
 	// Prepare multi-core
-	NUM_CPU := runtime.NumCPU()
-	fmt.Printf("NumCPU = %v\n", NUM_CPU)
-	runtime.GOMAXPROCS(NUM_CPU)
+	// CPU_NUM = runtime.NumCPU()
+	CPU_NUM = 100
+	// runtime.GOMAXPROCS(CPU_NUM)
+	// fmt.Printf("CPU_NUM = %v\n", CPU_NUM)
 
-	first := generateList(N)
-	// fmt.Printf("first = %v\n", first)
+	// prepare goroutines communication channel
+	// messages = make(chan []int64)
+	messages = make(chan *big.Int)
 
-	second := shuffleAndRemoveElement(first)
-	// fmt.Printf("second = %v\n", second)
+	testLoop := 200
+	for i:=0; i < testLoop; i++ {
 
-	missingElementIndex := findMissingElement(first, second)
-	fmt.Printf("Missing element is %v\n", missingElementIndex)
+		// generateList(N)
+		first := generateList(N)
+		// fmt.Printf("first = %v\n", first)
 
-	// t1 := time.Now()
-	// fmt.Printf("The call took %v to run.\n", t1.Sub(t0))
+		second := shuffleAndRemoveElement(first)
+		// fmt.Printf("second = %v\n", second)
+
+		missingElementIndex := findMissingElement(first, second)
+		fmt.Printf("Missing element is %v\n", missingElementIndex)
+
+		fmt.Printf("end loop[%v] ----------\n", i)
+	}
+
+	t1 := time.Now()
+	duration := t1.Sub(t0)
+	averageTime := duration.Nanoseconds() / int64(testLoop) / 1000 // in microseconds
+	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
 }
