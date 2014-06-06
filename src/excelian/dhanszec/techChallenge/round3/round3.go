@@ -20,7 +20,7 @@ const (
 func generateList(count int) []int64 {
 	ret := make([]int64, count)
 	for i := 0; i < count; i++ {
-		ret[i] = int64(rand.Intn(MAX_VALUE))
+		ret[i] = int64(rand.Int63()) // generate random positive 63-bit integer
 	}
 	return ret
 }
