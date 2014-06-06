@@ -5,6 +5,7 @@ import (
 	"time"
 	"math/rand"
 	"math/big"
+	"runtime"
 )
 
 const (
@@ -79,6 +80,11 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
+
+	// Prepare multi-core
+	NUM_CPU := runtime.NumCPU()
+	fmt.Printf("NumCPU = %v\n", NUM_CPU)
+	runtime.GOMAXPROCS(NUM_CPU)
 
 	first := generateList(N)
 	// fmt.Printf("first = %v\n", first)
