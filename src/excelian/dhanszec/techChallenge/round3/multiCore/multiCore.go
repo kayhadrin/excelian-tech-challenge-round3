@@ -190,7 +190,7 @@ func findMissingElement(first []int64, second []int64) int {
 }
 
 func main() {
-	t0 := time.Now()
+//	t0 := time.Now()
 
 	// Create and seed the generator.
 	// Typically a non-fixed seed should be used, such as time.Now().UnixNano().
@@ -214,8 +214,8 @@ func main() {
 	// messages = make(chan []int64)
 	messages = make(chan *big.Int)
 
-	testLoop := 200
-	for i:=0; i < testLoop; i++ {
+//	testLoop := 200
+//	for i:=0; i < testLoop; i++ {
 
 		// generateList(N)
 		first := generateList(N)
@@ -227,11 +227,11 @@ func main() {
 		missingElementIndex := findMissingElement(first, second)
 		fmt.Printf("Missing element is %v\n", missingElementIndex)
 
-		fmt.Printf("end loop[%v] ----------\n", i)
-	}
+//		fmt.Printf("end loop[%v] ----------\n", i)
+//	}
 
-	t1 := time.Now()
-	duration := t1.Sub(t0)
-	averageTime := duration.Nanoseconds() / int64(testLoop) / 1000 // in microseconds
-	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
+//	t1 := time.Now()
+//	duration := t1.Sub(t0)
+//	averageTime := duration.Nanoseconds() / int64(testLoop) / 1000 // in microseconds
+//	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
 }
