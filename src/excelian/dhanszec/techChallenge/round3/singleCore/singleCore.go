@@ -10,6 +10,8 @@ import (
 const (
 	MAX_VALUE = 9223372036854775807 // maximum 64-bit signed integer
 	// N = 10
+	// N = 1250
+	// N = 10000000
 	N = 10000
 )
 
@@ -71,24 +73,31 @@ func findMissingElement(first []int64, second []int64) int {
 }
 
 func main() {
-	// t0 := time.Now()
+	t0 := time.Now()
 
 	// Create and seed the generator.
 	// Typically a non-fixed seed should be used, such as time.Now().UnixNano().
 	// Using a fixed seed will produce the same output on every run.
 	rand.Seed(time.Now().UnixNano())
 
-	// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
+	testLoop := 200
+	for i:=0; i < testLoop; i++ {
 
-	first := generateList(N)
-	// fmt.Printf("first = %v\n", first)
+		// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
 
-	second := shuffleAndRemoveElement(first)
-	// fmt.Printf("second = %v\n", second)
+		first := generateList(N)
+		// fmt.Printf("first = %v\n", first)
 
-	missingElementIndex := findMissingElement(first, second)
-	fmt.Printf("Missing element is %v\n", missingElementIndex)
+		second := shuffleAndRemoveElement(first)
+		// fmt.Printf("second = %v\n", second)
 
-	// t1 := time.Now()
-	// fmt.Printf("The call took %v to run.\n", t1.Sub(t0))
+		missingElementIndex := findMissingElement(first, second)
+		fmt.Printf("Missing element is %v\n", missingElementIndex)
+
+	}
+
+	t1 := time.Now()
+	duration := t1.Sub(t0)
+	averageTime := duration.Nanoseconds() / int64(testLoop) / 1000 // in microseconds
+	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
 }
