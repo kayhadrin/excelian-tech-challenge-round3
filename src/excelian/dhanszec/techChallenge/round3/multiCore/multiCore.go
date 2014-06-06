@@ -1,3 +1,5 @@
+// Multi-routine version
+// It seems that it only becomes more efficient than the single-core version when N>10,000,000
 package main
 
 import (
