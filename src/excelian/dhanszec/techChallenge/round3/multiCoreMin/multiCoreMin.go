@@ -10,98 +10,85 @@ import (
 )
 
 const (
-	MAX_VALUE = 9223372036854775807
+	M = 9223372036854775807
 	N = 33554431
-	TEST_COUNT = 4
 )
 
 var (
-	CPU_NUM int
-	sumChannel chan *big.Int
+	C int
+	s chan *big.Int
 )
 
-func generateList(count int) []int64 {
-	ret := make([]int64, count)
-	for i := 0; i < count; i++ {
-		ret[i] = int64(rand.Int63())
-
+func generateList(c int) []int64 {
+	r := make([]int64, c)
+	for i := 0; i < c; i++ {
+		r[i] = int64(rand.Int63())
 	}
-	return ret
+	return r
 }
 
-func shuffleAndRemoveElement(array []int64) []int64 {
-	arrayLen := len(array)
-	randomIndexes := rand.Perm(arrayLen)
+func shuffleAndRemoveElement(a []int64) []int64 {
+	L := len(a)
+	r := rand.Perm(L)
 
-	retLen := arrayLen - 1
-	ret := make([]int64, retLen)
-	for i := 0; i < retLen; i++ {
-		ret[i] = array[ randomIndexes[i] ]
+	n := L - 1
+	t := make([]int64, n)
+	for i := 0; i < n; i++ {
+		t[i] = a[ r[i] ]
 	}
-	return ret
+	return t
 }
 
-func findMissingElement(first []int64, second []int64) int {
-	firstLength := len(first)
-	secondLength := len(second)
-	firstArrayMap := make(map[int64]int, firstLength)
-	defaultSliceCount := int(math.Floor(float64(secondLength / CPU_NUM)))
-	sumArrays := func (_first, _second []int64, async bool) *big.Int {
-		_sum := big.NewInt(0)
-		_firstLen := len(_first)
-		_secondLen := len(_second)
-		for i := 0; i < _secondLen; i++ {
-			_sum = _sum.Add(_sum, big.NewInt(int64(_first[i] - _second[i])))
+func findMissingElement(a []int64, b []int64) int {
+	c := len(a)
+	d := len(b)
+	e := make(map[int64]int, c)
+	f := int(math.Floor(float64(d / C)))
+	g := func (h, k []int64, l bool) *big.Int {
+		m := big.NewInt(0)
+		n := len(h)
+		o := len(k)
+		for i := 0; i < o; i++ {
+			m = m.Add(m, big.NewInt(int64(h[i] - k[i])))
 		}
-		if _firstLen > _secondLen {
-			_sum = _sum.Add(_sum, big.NewInt(_first[_firstLen - 1]))
-		}
-
-		if async {
-			sumChannel <- _sum
+		if n > o {
+			m = m.Add(m, big.NewInt(h[n - 1]))
 		}
 
-		return _sum
+		if l {
+			s <- m
+		}
+
+		return m
 	}
 
-	cpuNumMinus := CPU_NUM - 1
-	offset := 0
-	for i := 0; i < cpuNumMinus; i++ {
-		go sumArrays(first[offset:offset + defaultSliceCount], second[offset:offset + defaultSliceCount], true)
-		offset += defaultSliceCount
+	p := C - 1
+	q := 0
+	for i := 0; i < p; i++ {
+		go g(a[q:q + f], b[q:q + f], true)
+		q += f
 	}
-	sum := sumArrays(first[offset:], second[offset:], false)
+	r := g(a[q:], b[q:], false)
 
-	for i := 0; i < cpuNumMinus; i++ {
-		receivedSum := <- sumChannel
-		sum = sum.Add(sum, receivedSum)
-	}
-
-	for i, firstVal := range first {
-		firstArrayMap[firstVal] = i
+	for i := 0; i < p; i++ {
+		t := <- s
+		r = r.Add(r, t)
 	}
 
-	return firstArrayMap[sum.Int64()]
+	for i, u := range a {
+		e[u] = i
+	}
+
+	return e[r.Int64()]
 }
 
 func main() {
-	t0 := time.Now()
 	rand.Seed(time.Now().UnixNano())
-	fmt.Printf("N = %v\n", N)
-	fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
-	CPU_NUM = runtime.NumCPU()
-	runtime.GOMAXPROCS(CPU_NUM)
-	fmt.Printf("CPU_NUM = %v\n", CPU_NUM)
-	sumChannel = make(chan *big.Int)
-	for i:=0; i < TEST_COUNT; i++ {
-		first := generateList(N)
-		second := shuffleAndRemoveElement(first)
-		missingElementIndex := findMissingElement(first, second)
-		fmt.Printf("Missing element is %v\n", missingElementIndex)
-		fmt.Printf("end loop[%v] ----------\n", i)
-	}
-	t1 := time.Now()
-	duration := t1.Sub(t0)
-	averageTime := duration.Nanoseconds() / int64(TEST_COUNT) / 1000
-	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
+	C = runtime.NumCPU()
+	runtime.GOMAXPROCS(C)
+	s = make(chan *big.Int)
+	F := generateList(N)
+	S := shuffleAndRemoveElement(F)
+	x := findMissingElement(F, S)
+	fmt.Printf("Missing element is %v", x)
 }
