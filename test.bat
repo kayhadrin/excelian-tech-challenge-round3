@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set ITERATIONS=1000
+set ITERATIONS=10
 
 echo ITERATIONS=%ITERATIONS%
 
