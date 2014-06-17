@@ -12,7 +12,10 @@ const (
 	// N = 10
 	// N = 1250
 	// N = 10000000
-	N = 10000
+	// N = 10000
+	N = 33554431 // math.Pow(2, 25) - 1
+	// N = 1048575 // math.Pow(2, 20) - 1
+	TEST_COUNT = 1
 )
 
 func generateList(count int) []int64 {
@@ -27,6 +30,10 @@ func shuffleAndRemoveElement(array []int64) []int64 {
 	arrayLen := len(array)
 	randomIndexes := rand.Perm(arrayLen)
 	//fmt.Printf("randomIndexes = %v\n", randomIndexes)
+
+	//DEBUG
+	fmt.Printf("CHEAT missing element index = %v\n", randomIndexes[len(randomIndexes) - 1])
+	fmt.Printf("CHEAT missing element value = %v\n", array[randomIndexes[len(randomIndexes) - 1]])
 
 	retLen := arrayLen - 1
 	ret := make([]int64, retLen)
@@ -69,15 +76,14 @@ func findMissingElement(first []int64, second []int64) int {
 }
 
 func main() {
-//	t0 := time.Now()
+	t0 := time.Now()
 
 	// Create and seed the generator.
 	// Typically a non-fixed seed should be used, such as time.Now().UnixNano().
 	// Using a fixed seed will produce the same output on every run.
 	rand.Seed(time.Now().UnixNano())
 
-//	testLoop := 200
-//	for i:=0; i < testLoop; i++ {
+	for i:=0; i < TEST_COUNT; i++ {
 
 		// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
 
@@ -89,10 +95,10 @@ func main() {
 
 		missingElementIndex := findMissingElement(first, second)
 		fmt.Printf("Missing element is %v\n", missingElementIndex)
-//	}
+	}
 
-//	t1 := time.Now()
-//	duration := t1.Sub(t0)
-//	averageTime := duration.Nanoseconds() / int64(testLoop) / 1000 // in microseconds
-//	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
+	t1 := time.Now()
+	duration := t1.Sub(t0)
+	averageTime := duration.Nanoseconds() / int64(TEST_COUNT) / 1000 // in microseconds
+	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
 }
