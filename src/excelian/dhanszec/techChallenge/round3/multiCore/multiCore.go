@@ -16,13 +16,16 @@ const (
 	// MAX_VALUE = 100
 	// N = 100
 	// N = 10000000 // this is when multi-core starts to become noticeable
-	N = 10000
+	// N = 10000
+	N = 33554431 // math.Pow(2, 25) - 1
+	// N = 1048575 // math.Pow(2, 20) - 1
+	TEST_COUNT = 4
 )
 
 var (
 	CPU_NUM int
-	// messages chan []int64
-	messages chan *big.Int
+	//randNbChannel chan []int64
+	sumChannel chan *big.Int
 )
 
 func generateList(count int) []int64 {
@@ -33,13 +36,13 @@ func generateList(count int) []int64 {
 	}
 	return ret
 }
+/*
+*/
 
 /*
-func __generateList(count int) []int64 {
+func generateList(count int) []int64 {
 	defaultSliceCount := int(math.Floor(float64(count / CPU_NUM)))
-	// finalSliceCount := int(float64(count) - defaultSliceCount * float64(CPU_NUM) + defaultSliceCount)
 	finalSliceCount := count - defaultSliceCount * CPU_NUM + defaultSliceCount
-	//defaultSliceCount_int := int(defaultSliceCount)
 
 	//DEBUG
 	// fmt.Printf("sliceCount = %v\n", defaultSliceCount)
@@ -51,11 +54,10 @@ func __generateList(count int) []int64 {
 		for j := 0; j < len; j++ {
 			numbers[j] = rand.Int63n(MAX_VALUE)
 		}
-		messages <- numbers
+		randNbChannel <- numbers
 	}
 
 	finalArray := make([]int64, count)
-	// finalArray := []int64{}
 
 	// send off goroutines
 	cpuNumMinus := CPU_NUM - 1
@@ -67,7 +69,7 @@ func __generateList(count int) []int64 {
 	// process received data
 	finalIndex := 0
 	for i := 0; i < CPU_NUM; i++ {
-		newNumbers := <- messages
+		newNumbers := <- randNbChannel
 		// fmt.Printf("newNumbers = %v\n", newNumbers)
 		// finalArray[i] = newNumbers
 		// finalArray = append(finalArray, newNumbers...)
@@ -93,6 +95,10 @@ func shuffleAndRemoveElement(array []int64) []int64 {
 	arrayLen := len(array)
 	randomIndexes := rand.Perm(arrayLen)
 	//fmt.Printf("randomIndexes = %v\n", randomIndexes)
+
+	//DEBUG
+	//fmt.Printf("CHEAT missing element index = %v\n", randomIndexes[len(randomIndexes) - 1])
+	//fmt.Printf("CHEAT missing element value = %v\n", array[randomIndexes[len(randomIndexes) - 1]])
 
 	retLen := arrayLen - 1
 	ret := make([]int64, retLen)
@@ -131,7 +137,7 @@ func findMissingElement(first []int64, second []int64) int {
 
 		if async {
 //			fmt.Printf("<- _sum = %v\n", _sum)
-			messages <- _sum
+			sumChannel <- _sum
 		} else {
 //			fmt.Printf("return _sum = %v\n", _sum)
 		}
@@ -152,7 +158,7 @@ func findMissingElement(first []int64, second []int64) int {
 
 	// process received data
 	for i := 0; i < cpuNumMinus; i++ {
-		receivedSum := <- messages
+		receivedSum := <- sumChannel
 		//fmt.Printf("receivedSum = %v\n", receivedSum)
 		sum = sum.Add(sum, receivedSum)
 		//fmt.Printf("sum = %v\n", sum)
@@ -190,14 +196,15 @@ func findMissingElement(first []int64, second []int64) int {
 }
 
 func main() {
-//	t0 := time.Now()
+	t0 := time.Now()
 
 	// Create and seed the generator.
 	// Typically a non-fixed seed should be used, such as time.Now().UnixNano().
 	// Using a fixed seed will produce the same output on every run.
 	rand.Seed(time.Now().UnixNano())
 
-	// fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
+	fmt.Printf("N = %v\n", N)
+	fmt.Printf("MAX_VALUE = %v\n", MAX_VALUE)
 
 	// Prepare multi-core
 	CPU_NUM = runtime.NumCPU()
@@ -205,17 +212,16 @@ func main() {
 	//DEBUG
 	// Enable the line below to allow Go to run goroutines on multiple CPU cores.
 	// But it's not very effiecient unless N is really large (10M)
-	// runtime.GOMAXPROCS(CPU_NUM)
+	runtime.GOMAXPROCS(CPU_NUM)
 	//////////////////////
 
-	// fmt.Printf("CPU_NUM = %v\n", CPU_NUM)
+	fmt.Printf("CPU_NUM = %v\n", CPU_NUM)
 
 	// prepare goroutines communication channel
-	// messages = make(chan []int64)
-	messages = make(chan *big.Int)
+	//randNbChannel = make(chan []int64)
+	sumChannel = make(chan *big.Int)
 
-//	testLoop := 200
-//	for i:=0; i < testLoop; i++ {
+	for i:=0; i < TEST_COUNT; i++ {
 
 		// generateList(N)
 		first := generateList(N)
@@ -227,11 +233,11 @@ func main() {
 		missingElementIndex := findMissingElement(first, second)
 		fmt.Printf("Missing element is %v\n", missingElementIndex)
 
-//		fmt.Printf("end loop[%v] ----------\n", i)
-//	}
+		fmt.Printf("end loop[%v] ----------\n", i)
+	}
 
-//	t1 := time.Now()
-//	duration := t1.Sub(t0)
-//	averageTime := duration.Nanoseconds() / int64(testLoop) / 1000 // in microseconds
-//	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
+	t1 := time.Now()
+	duration := t1.Sub(t0)
+	averageTime := duration.Nanoseconds() / int64(TEST_COUNT) / 1000 // in microseconds
+	fmt.Printf("The call took %v to run. Average: %vus\n", duration, averageTime)
 }
