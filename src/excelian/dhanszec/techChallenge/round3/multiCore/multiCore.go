@@ -40,6 +40,7 @@ func generateList(count int) []int64 {
 */
 
 /*
+// This is not that fast since sending all the generated numbers on the channel is the main bottleneck
 func generateList(count int) []int64 {
 	defaultSliceCount := int(math.Floor(float64(count / CPU_NUM)))
 	finalSliceCount := count - defaultSliceCount * CPU_NUM + defaultSliceCount
@@ -168,29 +169,6 @@ func findMissingElement(first []int64, second []int64) int {
 	for i, firstVal := range first {
 		firstArrayMap[firstVal] = i
 	}
-
-//	for i, secondVal := range second {
-//		firstVal := first[i]
-//		//diff := int64(firstVal - secondVal)
-//
-//		// index the 'first array' value
-//		firstArrayMap[firstVal] = i
-//
-//		//sum = sum.Add(sum, big.NewInt(diff) )
-//		//fmt.Printf("%v| diff = %v - %v = %v, sum = %v\n", i, firstVal, secondVal, diff, sum)
-//	}
-//
-//	// add the last value from first array
-//	lastVal := int64(first[lastIndex])
-//	// index the last value of the 'first array'
-//	firstArrayMap[lastVal] = lastIndex
-//
-//	// finalise sum calculation
-//	sum = sum.Add(sum, big.NewInt(lastVal))
-	// fmt.Printf("add last value from first array = %v\n", lastVal)
-
-	// fmt.Printf("Final sum = %v\n", sum)
-	//fmt.Printf("firstArrayMap = %v\n", firstArrayMap)
 
 	return firstArrayMap[sum.Int64()]
 }
