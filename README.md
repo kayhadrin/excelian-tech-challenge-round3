@@ -30,7 +30,7 @@ The code should look like the following:
 
 ### Test
 
-N (generateList()’s argument) will be set to a small value to check the algorithm is producing the expected result, and then set to 10 000.
+N (generateList()’s argument) will be set to a small value to check the algorithm is producing the expected result, and then set to 33554431 (2^25 - 1).
 
 Good luck! :-) 
 
@@ -41,10 +41,14 @@ Assuming that you have a working Go development environment.
 	cd <this git repo root>
 	go install excelian/dhanszec/techChallenge/round3/multiCore
 	go install excelian/dhanszec/techChallenge/round3/singleCore
+	go install excelian/dhanszec/techChallenge/round3/multiCoreMin
 	go install excelian/dhanszec/techChallenge/round3/singleCoreMin
 
-	# run multi-core (code is using multiple threads by default)
+	# run multi-core (code is using multiple CPUs by default)
 	bin\multiCore.exe
+
+	# run multi-core (minified) (code is using multiple CPUs by default)
+	bin\multiCoreMin.exe
 
 	# run single-core
 	bin\singleCore.exe
@@ -60,8 +64,4 @@ Tested on:
 - 8GB RAM
 - Win7 64b
 
-| N | Single Core   | Multi threads | Multi core |  
-| --|:--------------|:-------------:| ----------:|
-| 10,000 | 3610 | 3600 | 8685 |
-| 10,000,000 | 5291302 | 5443311 | 4788273 |
-*Time in microseconds.*
+Multi code bin version:
