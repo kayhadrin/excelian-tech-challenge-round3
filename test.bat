@@ -7,7 +7,7 @@ echo ITERATIONS=%ITERATIONS%
 set STARTTIME=%time%
 
 for /l %%x in (1, 1, %ITERATIONS%) do (
-	bin\round3.exe > nul
+	bin\multiCoreMin.exe > nul
 )
 
 set ENDTIME=%time%
