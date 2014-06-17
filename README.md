@@ -64,4 +64,4 @@ Tested on:
 - 8GB RAM
 - Win7 64b
 
-Multi code bin version:
+Multi core min version: ~17,514ms (10 runs)
