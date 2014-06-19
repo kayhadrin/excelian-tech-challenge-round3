@@ -1,13 +1,13 @@
 @echo off
 setlocal
-set ITERATIONS=10
+set ITERATIONS=20
 
 echo ITERATIONS=%ITERATIONS%
 
 set STARTTIME=%time%
 
 for /l %%x in (1, 1, %ITERATIONS%) do (
-	bin\multiCoreMin.exe > nul
+	bin\multiCoreXor.exe > nul
 )
 
 set ENDTIME=%time%

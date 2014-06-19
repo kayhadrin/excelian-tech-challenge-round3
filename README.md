@@ -42,10 +42,14 @@ Assuming that you have a working Go development environment.
 	go install excelian/dhanszec/techChallenge/round3/multiCore
 	go install excelian/dhanszec/techChallenge/round3/singleCore
 	go install excelian/dhanszec/techChallenge/round3/multiCoreMin
+	go install excelian/dhanszec/techChallenge/round3/multiCoreXor
 	go install excelian/dhanszec/techChallenge/round3/singleCoreMin
 
 	# run multi-core (code is using multiple CPUs by default)
 	bin\multiCore.exe
+
+	# run multi-core with XOR operator (code is using multiple CPUs by default)
+	bin\multiCoreXor.exe
 
 	# run multi-core (minified) (code is using multiple CPUs by default)
 	bin\multiCoreMin.exe
@@ -64,4 +68,4 @@ Tested on:
 - 8GB RAM
 - Win7 64b
 
-Multi core min version: ~17,514ms (10 runs)
+Multi core with XOR version: ~5,461ms (10 runs)
